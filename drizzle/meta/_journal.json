@@ -1,0 +1,20 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1721605032377,
+      "tag": "0000_premium_serpent_society",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1721679361968,
+      "tag": "0001_special_zemo",
+      "breakpoints": true
+    }
+  ]
+}
