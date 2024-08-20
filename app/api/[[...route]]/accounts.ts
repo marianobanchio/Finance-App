@@ -5,7 +5,7 @@ import { Hono } from "hono";
 import { HTTPException } from 'hono/http-exception'
 import {createId} from '@paralleldrive/cuid2'
 import { z } from "zod";
-import { and, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 const app = new Hono()
 .get('/', async (c) => {
@@ -19,6 +19,33 @@ const app = new Hono()
         }
     ).from(accounts)
     return c.json({data});
+
+})
+.get('/:id',
+    zValidator("param", z.object({
+        id: z.string().optional(),
+    })),
+    async (c) => {
+        const { id } = c.req.valid("param");
+
+        if (!id) {
+            return c.json({error: "Missing id"}, 400);
+        }
+
+        const [data] = await db
+        .select({
+            id: accounts.id,
+            name: accounts.name
+        })
+        .from(accounts)
+        .where(
+            and(
+                eq(accounts.userId, '1'),
+                eq(accounts.id, id),
+            )
+        );
+
+        return c.json({data});
 
 }).post("/", 
     zValidator("json", inserAccountSchema.pick({
@@ -68,6 +95,63 @@ const app = new Hono()
         return c.json({data});        
 
     }
- )
+ ).patch("/:id",
+    zValidator("param", z.object({ id: z.string().optional() })),
+
+    zValidator("json", inserAccountSchema.pick({
+        name: true
+    })),
+
+    async(c) => {
+        const { id } = c.req.valid("param");
+        const values = c.req.valid("json");
+
+        if (!id) {
+            return c.json({error: "Missing id"}, 400);
+        }
+
+        const [data] = await db
+        .update(accounts)
+        .set(values)
+        .where(
+            and(
+                eq(accounts.userId, '1'),
+                eq(accounts.id, id),
+            )
+        ).returning();
+
+        if (!data) {
+            return c.json({error: "Not found"}, 404)
+        }
+
+        return c.json({data});
+
+ }).delete("/:id",
+    zValidator("param", z.object({ id: z.string().optional()})),
+    async(c) => {
+        const { id } = c.req.valid("param");
+
+        if (!id) {
+            return c.json({error: "Missing id"}, 400);
+        }
+
+        const [data] = await db
+        .delete(accounts)
+        .where(
+            and(
+                eq(accounts.userId, '1'),
+                eq(accounts.id, id),
+            )
+        ).returning({
+            id: accounts.id
+        });
+
+        if (!data) {
+            return c.json({error: "Not found"}, 404)
+        }
+
+        return c.json({data});
+
+ })
 
 export default app;
