@@ -15,6 +15,13 @@
       "when": 1721679361968,
       "tag": "0001_special_zemo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1724224229015,
+      "tag": "0002_kind_namora",
+      "breakpoints": true
     }
   ]
 }
